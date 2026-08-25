@@ -1,0 +1,143 @@
+# -*- coding: utf-8 -*-
+
+class Person:
+    def __init__(self, id, name):
+        self.id = id
+        self.name = name
+        
+    def display(self):
+        print('*'*60)
+        print('CUSTOMER DETAILS'.center(60,'*'))
+        print('Name:',self.name)
+        print('Customer ID:',self.id)
+        print('*'*60)
+              
+class Customer(Person):
+    def __init__(self, id, name, u):
+        super().__init__(id, name)
+        self.u = u
+        self.bill=self.calculate_bill()
+        
+    def calculate_bill(self):
+        self.bills=0
+        if self.u <= 100:
+            self.bills=self.u * 1
+        elif self.u <= 200:
+            self.bills=(100*1)+(self.u-100)*2
+        else:
+            self.bills=(100*1)+(100*2)+(self.u-200)*3
+        self.f_c=50
+        self.tax=0.05*self.bills
+        self.t=self.bills+self.f_c+self.tax
+        return self.t
+    
+    def display(self):
+        print('='*60)
+        print('ELECTRICITY BILL'.center(60,' '))
+        print('='*60)
+        print(f"{'Customer Name':<25}:{self.name}")
+        print(f"{'Customer ID':<25}:{self.id}")
+        print(f"{'Units Consumed':<25}:{self.u}")
+        print('-'*60)
+        print(f"{'Description':<30}{'Amount(\u20B9)':>23}")
+        print('-'*60)
+        print(f"{'Energy Charge':<30}:{self.bills:>20.2f}")
+        print(f"{'Fixed Charge':<30}:{self.f_c:>20.2f}")
+        print(f"{'Electricity Duty':<30}:{self.tax:>20.2f}")
+        print('-'*60)
+        print(f"{'TOTAL BILL':<30}{self.t:>21.2f}")
+        print('='*60)
+
+class BillingSystem:
+    def __init__(self, filename):
+        self.filename = filename
+
+    def add_customer(self):
+        cid = input("\nEnter Customer ID: ")
+        with open(self.filename, "r") as file:
+            for line in file:
+                data = line.strip().split("|")
+                if data[0] == cid:
+                    print("Customer ID already exists! Try a different ID.\n")
+                    return
+        name = input("Enter Name: ")
+        u = int(input("Enter Units Consumed: "))
+        customer = Customer(cid, name, u)
+        with open(self.filename, "a") as file:
+            file.write(f"{customer.id}|{customer.name}|{customer.u}|{customer.bill}\n")
+        print("Customer added successfully!\n")
+
+    def view_customers(self):
+        try:
+            with open(self.filename, "r") as file:
+                print('\n')
+                print('Customer Records'.center(60,'-'))
+                print('\n')
+                for line in file:
+                    data = line.strip().split("|")
+                    customer = Customer(data[0], data[1], int(data[2]))
+                    customer.display()
+                    print('\n')
+        except FileNotFoundError:
+            print("Sorry, no records found T_T...\n")
+
+    def search_customer(self):
+        cid = input("Enter Customer ID to search: ")
+        found = False
+        try:
+            with open(self.filename, "r") as file:
+                for line in file:
+                    data = line.strip().split("|")
+                    if data[0] == cid:
+                        print('\n')
+                        customer = Customer(data[0], data[1], int(data[2]))
+                        customer.display()
+                        print('\n')
+                        found = True
+                        break
+            if not found:
+                print("Customer not found T_T...\n")
+        except FileNotFoundError:
+            print("No records found T_T...\n")
+
+    def delete_customer(self):
+        cid = input("Enter Customer ID to delete: ")
+        lines = []
+        try:
+            with open(self.filename, "r") as file:
+                lines = file.readlines()
+            with open(self.filename, "w") as file:
+                found = False
+                for line in lines:
+                    data = line.strip().split("|")
+                    if data[0] != cid:
+                        file.write(line)
+                    else:
+                        found = True
+            if found:
+                print("Customer deleted!!!\n")
+            else:
+                print("Customer not found T_T..\n")
+        except FileNotFoundError:
+            print("No records found T_T...\n")
+
+s=BillingSystem("customers.txt")
+while True:
+    print("=".center(60,'='))
+    print("ELECTRICITY BILLING SYSTEM".center(60,'*'))
+    print("=".center(60,'='))
+    print('''What would you like to choose?\n1.Add Customer\n2.View All\n3.Search\n4.Delete\n5.Exit''')
+    a=input()
+    if a == "1":
+        s.add_customer()
+    elif a == "2":
+        s.view_customers()
+    elif a == "3":
+        s.search_customer()
+    elif a == "4":
+        s.delete_customer()
+    elif a == "5":
+        print("Exiting...")
+        break
+    else:
+        print("Invalid choice!")
